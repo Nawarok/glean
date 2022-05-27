@@ -28,13 +28,36 @@ Graphics.checkerboardPeak.accumulateSamples([23])
 
 </div>
 
-<div data-lang="Java" class="tab"></div>
-<div data-lang="Swift" class="tab"></div>
-<div data-lang="Python" class="tab"></div>
+<div data-lang="Java" class="tab">
+
+```Java
+import org.mozilla.yourApplication.GleanMetrics.Graphics;
+
+Graphics.INSTANCE.checkerboardPeak().accumulateSamples(listOf(23));
+```
+
+</div>
+<div data-lang="Swift" class="tab">
+
+```Swift
+Graphics.checkerboardPeak.accumulateSamples([23])
+```
+
+</div>
+<div data-lang="Python" class="tab">
+
+```Python
+from glean import load_metrics
+metrics = load_metrics("metrics.yaml")
+
+metrics.graphics.checkerboard_peak.accumulate_samples([23])
+```
+
+</div>
 <div data-lang="Rust" class="tab">
 
 ```Rust
-use glean_metrics;
+use glean_metrics::graphics;
 
 graphics::checkerboard_peak.accumulate_samples_signed(vec![23]);
 ```
@@ -74,7 +97,9 @@ Glean.graphics.checkerboardPeak.accumulateSamples([23])
 
 ### `testGetValue`
 
-Gets the recorded value for a given counter metric.
+Gets the recorded value for a given counter metric.  
+Returns a struct with counts per buckets and total sum if data is stored.  
+Returns `null` if no data is stored.
 
 {{#include ../../../shared/tab_header.md}}
 
@@ -87,21 +112,57 @@ import org.mozilla.yourApplication.GleanMetrics.Graphics
 val snapshot = Graphics.checkerboardPeak.testGetValue()
 
 // Does the sum have the expected value?
-assertEquals(11, snapshot.sum)
+assertEquals(23, snapshot.sum)
 
 // Usually you don't know the exact timing values, but how many should have been recorded.
-assertEquals(2L, snapshot.count())
+assertEquals(1L, snapshot.values.size)
 ```
 
 </div>
 
-<div data-lang="Java" class="tab"></div>
-<div data-lang="Swift" class="tab"></div>
-<div data-lang="Python" class="tab"></div>
+<div data-lang="Java" class="tab">
+
+```Java
+import org.mozilla.yourApplication.GleanMetrics.Graphics;
+
+// Get snapshot
+val snapshot = Graphics.INSTANCE.checkerboardPeak().testGetValue();
+
+// Does the sum have the expected value?
+assertEquals(23, snapshot.sum);
+```
+
+</div>
+<div data-lang="Swift" class="tab">
+
+```Swift
+// Get snapshot.
+let snapshot = graphics.checkerboardPeak.testGetValue()
+
+// Usually you don't know the exact timing values,
+// but how many should have been recorded.
+XCTAssertEqual(23, snapshot.sum)
+```
+
+</div>
+<div data-lang="Python" class="tab">
+
+```Python
+from glean import load_metrics
+metrics = load_metrics("metrics.yaml")
+
+# Get snapshot.
+snapshot = metrics.graphics.checkerboard_peak.test_get_value()
+
+# Usually you don't know the exact timing values,
+# but how many should have been recorded.
+assert 23 == snapshot.sum
+```
+
+</div>
 <div data-lang="Rust" class="tab">
 
 ```Rust
-use glean::ErrorType;
 use glean_metrics::graphics;
 
 // Does it have the expected value?
@@ -132,32 +193,6 @@ Assert.equal(23, data.sum);
 
 {{#include ../../../shared/tab_footer.md}}
 
-### `testHasValue`
-
-Whether or not **any** value was recorded for a given counter metric.
-
-{{#include ../../../shared/tab_header.md}}
-
-<div data-lang="Kotlin" class="tab">
-
-```Kotlin
-import org.mozilla.yourApplication.GleanMetrics.Graphics
-
-// Was anything recorded?
-assertTrue(Graphics.checkerboardPeak.testHasValue())
-```
-
-</div>
-
-<div data-lang="Java" class="tab"></div>
-<div data-lang="Swift" class="tab"></div>
-<div data-lang="Python" class="tab"></div>
-<div data-lang="Rust" class="tab"></div>
-<div data-lang="JavaScript" class="tab"></div>
-<div data-lang="Firefox Desktop" class="tab"></div>
-
-{{#include ../../../shared/tab_footer.md}}
-
 ### `testGetNumRecordedErrors`
 
 Gets number of errors recorded for a given counter metric.
@@ -170,14 +205,50 @@ Gets number of errors recorded for a given counter metric.
 import org.mozilla.yourApplication.GleanMetrics.Graphics
 
 /// Did the metric receive a negative value?
-assertEquals(1, Graphics.checkerboardPeak.testGetNumRecordedErrors(ErrorType.InvalidValue))
+assertEquals(
+    0,
+    Graphics.checkerboardPeak.testGetNumRecordedErrors(ErrorType.INVALID_VALUE)
+)
 ```
 
 </div>
 
-<div data-lang="Java" class="tab"></div>
-<div data-lang="Swift" class="tab"></div>
-<div data-lang="Python" class="tab"></div>
+<div data-lang="Java" class="tab">
+
+```Java
+import org.mozilla.yourApplication.GleanMetrics.Graphics;
+
+/// Did the metric receive a negative value?
+assertEquals(
+    0,
+    Graphics.INSTANCE.checkerboardPeak().testGetNumRecordedErrors(
+        ErrorType.INVALID_VALUE
+    )
+)
+```
+
+</div>
+<div data-lang="Swift" class="tab">
+
+```Swift
+// Assert that no errors were recorded.
+XCTAssertEqual(0, Graphics.checkerboardPeak.testGetNumRecordedErrors(.invalidValue))
+```
+
+</div>
+<div data-lang="Python" class="tab">
+
+```Python
+from glean import load_metrics
+metrics = load_metrics("metrics.yaml")
+
+# Assert that no errors were recorded.
+assert 0 == metrics.graphics.checkerboard_peak.test_get_num_recorded_errors(
+    ErrorType.INVALID_VALUE
+)
+```
+
+</div>
 <div data-lang="Rust" class="tab">
 
 ```Rust
@@ -187,7 +258,11 @@ use glean_metrics::graphics;
 // Were any of the values negative and thus caused an error to be recorded?
 assert_eq!(
     0,
-    graphics::checkerboard_peak.test_get_num_recorded_errors(ErrorType::InvalidValue));
+    graphics::checkerboard_peak.test_get_num_recorded_errors(
+        ErrorType::InvalidValue,
+        None
+    )
+);
 ```
 
 </div>
