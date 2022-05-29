@@ -143,9 +143,7 @@ def _event_extra_factory(name: str, argnames: List[Tuple[str, str]]) -> Any:
                 pass
             elif typ == "string" and isinstance(value, str):
                 pass
-            elif typ == "quantity" and isinstance(value, int):
-                pass
-            else:
+            elif typ != "quantity" or not isinstance(value, int):
                 raise TypeError(
                     f"Field '{key}' requires type {typ} in {self.__class__.__name__}"
                 )
@@ -196,10 +194,9 @@ def _get_metric_objects(
     Given a `glean_parser.metrics.Metric` instance, return the Glean Python
     bindings metric instances for the metric.
     """
-    args = {}
-    for arg in _ARGS:
-        if hasattr(metric, arg):
-            args[arg] = getattr_conv(metric, arg)
+    args = {
+        arg: getattr_conv(metric, arg) for arg in _ARGS if hasattr(metric, arg)
+    }
 
     metric_type = _TYPE_MAPPING.get(metric.type)
 
@@ -222,21 +219,21 @@ def _get_metric_objects(
     # Events and Pings also need to define an enumeration
     if metric.type == "event":
         if metric.has_extra_types:
-            class_name = name + "_extra"
+            class_name = f"{name}_extra"
             class_name = Camelize(class_name)
             values = metric.allowed_extra_keys_with_types
             keys_class = _event_extra_factory(class_name, values)  # type: ignore
             yield class_name, keys_class
         else:
-            enum_name = name + "_keys"
+            enum_name = f"{name}_keys"
             class_name = Camelize(enum_name)
-            values = dict((x.upper(), x) for x in metric.allowed_extra_keys)
+            values = {x.upper(): x for x in metric.allowed_extra_keys}
             keys_enum = enum.Enum(class_name, values)  # type: ignore
             yield enum_name, keys_enum
     elif metric.type == "ping":
-        enum_name = name + "_reason_codes"
+        enum_name = f"{name}_reason_codes"
         class_name = Camelize(enum_name)
-        values = dict((x.upper(), i) for (i, x) in enumerate(metric.reason_codes))
+        values = {x.upper(): i for (i, x) in enumerate(metric.reason_codes)}
         keys_enum = enum.Enum(class_name, values)  # type: ignore
         yield enum_name, keys_enum
 

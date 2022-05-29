@@ -32,7 +32,7 @@ def test_the_api_saves_to_its_storage_engine():
     snapshot = metric.test_get_value()
     assert 0 < snapshot.sum
 
-    count = sum([v for v in snapshot.values.values()])
+    count = sum(list(snapshot.values.values()))
     assert 3 == count
 
 
@@ -91,7 +91,7 @@ def test_api_saves_to_secondary_pings():
     for store in ["store1", "store2", "store3"]:
         snapshot = metric.test_get_value(store)
         assert 0 < snapshot.sum
-        count = sum([v for v in snapshot.values.values()])
+        count = sum(list(snapshot.values.values()))
         assert 3 == count
 
 

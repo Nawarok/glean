@@ -93,7 +93,7 @@ class _RecordingUploader(base_uploader.BaseUploader):
 
         uncompressed_data = gzip.decompress(data) if is_gzipped else data
         with self.file_path.open("w") as fd:
-            fd.write(str(path) + "\n")
+            fd.write(path + "\n")
             fd.write(uncompressed_data.decode("utf-8") + "\n")
 
         return UploadResult.HTTP_STATUS(200)

@@ -78,9 +78,7 @@ class BinaryDistribution(Distribution):
 
 
 def macos_compat(target):
-    if target.startswith("aarch64-"):
-        return "11.0"
-    return "10.7"
+    return "11.0" if target.startswith("aarch64-") else "10.7"
 
 
 # The logic for specifying wheel tags in setuptools/wheel is very complex, hard
@@ -133,8 +131,7 @@ def get_rustc_info():
 
     data = {}
     for line in output.decode("utf-8").splitlines():
-        match = regex.match(line)
-        if match:
+        if match := regex.match(line):
             d = match.groupdict()
             data[d["key"]] = d["value"]
 

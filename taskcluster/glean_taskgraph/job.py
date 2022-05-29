@@ -163,7 +163,7 @@ def _convert_commands_to_string(commands):
 def _inject_secrets_scopes(run, taskdesc):
     secrets = run.pop("secrets", [])
     scopes = taskdesc.setdefault("scopes", [])
-    new_secret_scopes = ["secrets:get:{}".format(secret["name"]) for secret in secrets]
+    new_secret_scopes = [f'secrets:get:{secret["name"]}' for secret in secrets]
     new_secret_scopes = list(set(new_secret_scopes))  # Scopes must not have any duplicates
     scopes.extend(new_secret_scopes)
 

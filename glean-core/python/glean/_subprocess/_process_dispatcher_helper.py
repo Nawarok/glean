@@ -11,6 +11,7 @@ ambiguity between the `glean` and `glean.glean` import paths.
 """
 
 
+
 if __name__ == "__main__":  # pragma: no cover
     import base64
     import logging
@@ -37,9 +38,7 @@ if __name__ == "__main__":  # pragma: no cover
     if simple_log_level is not None:
         logging.basicConfig(level=simple_log_level)
 
-    success = func(*args)
-
-    if success:
+    if success := func(*args):
         sys.exit(0)
     else:
         sys.exit(1)

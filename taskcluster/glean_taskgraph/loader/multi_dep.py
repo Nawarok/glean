@@ -48,7 +48,7 @@ def loader(kind, path, config, params, loaded_tasks):
         job = {'dependent-tasks': dep_tasks_per_kind,
                'primary-dependency': get_primary_dep(config, dep_tasks_per_kind)}
         if job_template:
-            job.update(copy.deepcopy(job_template))
+            job |= copy.deepcopy(job_template)
 
         yield job
 
@@ -75,13 +75,14 @@ def get_primary_dep(config, dep_tasks):
     for primary_kind in primary_dependencies:
         for dep_kind in dep_tasks:
             if dep_kind == primary_kind:
-                assert primary_dep is None, \
-                    "Too many primary dependent tasks in dep_tasks: {}!".format(
-                        [t.label for t in dep_tasks]
-                    )
+                assert (
+                    primary_dep is None
+                ), f"Too many primary dependent tasks in dep_tasks: {[t.label for t in dep_tasks]}!"
+
                 primary_dep = dep_tasks[dep_kind]
     if primary_dep is None:
-        raise Exception("Can't find dependency of {}: {}".format(
-            config['primary-dependency'], config
-        ))
+        raise Exception(
+            f"Can't find dependency of {config['primary-dependency']}: {config}"
+        )
+
     return primary_dep

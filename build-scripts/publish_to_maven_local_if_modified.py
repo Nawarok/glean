@@ -71,11 +71,8 @@ try:
         ln = next(changes_lines)
     # Skip instructional line about using `git add`.
     ln = next(changes_lines)
-    # Now we're at the list of untracked files.
-    ln = next(changes_lines)
-    while ln:
+    while ln := next(changes_lines):
         untracked_files.append(ln)
-        ln = next(changes_lines)
 except StopIteration:
     pass
 
@@ -106,7 +103,7 @@ except FileNotFoundError:
 if contents_hash == last_contents_hash:
     print("Contents have not changed, no need to publish")
 else:
-    print(f"Contents have changed, publishing")
+    print("Contents have changed, publishing")
     run_cmd_checked(["./gradlew", "publishToMavenLocal", f"-Plocal={time.time_ns()}"])
     with open(LAST_CONTENTS_HASH_FILE, "w") as f:
         f.write(contents_hash)

@@ -58,10 +58,7 @@ class _SyncWorkWrapper:
     def returncode(self) -> int:
         if not self._waited:
             raise RuntimeError("wait() must be called before returncode is available")
-        if self._result:
-            return 0
-        else:
-            return 1
+        return 0 if self._result else 1
 
 
 class ProcessDispatcher:
@@ -92,55 +89,54 @@ class ProcessDispatcher:
     def dispatch(cls, func, args) -> Union[_SyncWorkWrapper, subprocess.Popen]:
         from . import Glean
 
-        if Glean._configuration._allow_multiprocessing:
-            # We only want one of these processes running at a time, so if
-            # there's already one running, just bail out. It will pick up any
-            # newly-written pings as it processes the directory.
-            if cls._last_process is not None and cls._last_process.poll() is None:
-                return cls._last_process
+        if not Glean._configuration._allow_multiprocessing:
+            return _SyncWorkWrapper(func, args)
+        # We only want one of these processes running at a time, so if
+        # there's already one running, just bail out. It will pick up any
+        # newly-written pings as it processes the directory.
+        if cls._last_process is not None and cls._last_process.poll() is None:
+            return cls._last_process
 
-            # This sends the data over as a commandline argument, which has a
-            # maximum length of:
-            #   - 8191 characters on Windows
-            #     (see: https://support.microsoft.com/en-us/help/830473/command-prompt-cmd-exe-command-line-string-limitation)  # noqa
-            #   - As little as 4096 bytes on POSIX, though in practice much larger
-            #     (see _POSIX_ARG_MAX_: https://www.gnu.org/software/libc/manual/html_node/Minimums.html)  # noqa
-            # In practice, this is ~700 bytes, and the data is an implementation detail
-            # that Glean controls. This approach may need to change to pass over a pipe
-            # if it becomes too large.
+        # This sends the data over as a commandline argument, which has a
+        # maximum length of:
+        #   - 8191 characters on Windows
+        #     (see: https://support.microsoft.com/en-us/help/830473/command-prompt-cmd-exe-command-line-string-limitation)  # noqa
+        #   - As little as 4096 bytes on POSIX, though in practice much larger
+        #     (see _POSIX_ARG_MAX_: https://www.gnu.org/software/libc/manual/html_node/Minimums.html)  # noqa
+        # In practice, this is ~700 bytes, and the data is an implementation detail
+        # that Glean controls. This approach may need to change to pass over a pipe
+        # if it becomes too large.
 
-            payload = base64.b64encode(
-                pickle.dumps((Glean._simple_log_level, func, args))
-            ).decode("ascii")
+        payload = base64.b64encode(
+            pickle.dumps((Glean._simple_log_level, func, args))
+        ).decode("ascii")
 
-            if len(payload) > 4096:
-                log.warning("data payload to subprocess is greater than 4096 bytes")
+        if len(payload) > 4096:
+            log.warning("data payload to subprocess is greater than 4096 bytes")
 
-            # Help coverage.py do coverage across processes
-            if cls._doing_coverage:
-                os.environ["COVERAGE_PROCESS_START"] = str(
-                    Path(".coveragerc").absolute()
-                )
-
-            # Explicitly pass the contents of `sys.path` as `PYTHONPATH` to the
-            # subprocess so that there aren't any module search path
-            # differences.
-            python_path = ":".join(sys.path)
-
-            # We re-use the existing environment and overwrite only the `PYTHONPATH`
-            env = os.environ.copy()
-            env["PYTHONPATH"] = python_path
-
-            p = subprocess.Popen(
-                [sys.executable, _process_dispatcher_helper.__file__, payload],
-                env=env,
+        # Help coverage.py do coverage across processes
+        if cls._doing_coverage:
+            os.environ["COVERAGE_PROCESS_START"] = str(
+                Path(".coveragerc").absolute()
             )
 
-            cls._last_process = p
+        # Explicitly pass the contents of `sys.path` as `PYTHONPATH` to the
+        # subprocess so that there aren't any module search path
+        # differences.
+        python_path = ":".join(sys.path)
 
-            return p
-        else:
-            return _SyncWorkWrapper(func, args)
+        # We re-use the existing environment and overwrite only the `PYTHONPATH`
+        env = os.environ.copy()
+        env["PYTHONPATH"] = python_path
+
+        p = subprocess.Popen(
+            [sys.executable, _process_dispatcher_helper.__file__, payload],
+            env=env,
+        )
+
+        cls._last_process = p
+
+        return p
 
 
 __all__ = ["ProcessDispatcher"]

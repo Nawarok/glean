@@ -19,19 +19,22 @@ CHECKSUMS_EXTENSIONS = ('.sha1', '.md5')
 
 def get_components():
     build_config = _read_build_config()
-    components = []
-    for (name, project) in build_config['projects'].items():
-        if len(project['publications']) > 0:
-            components.append({
-                'name': name,
-                'path': project['path'],
-                'artifactId': project['artifactId'],
-                'publications': [{
+    return [
+        {
+            'name': name,
+            'path': project['path'],
+            'artifactId': project['artifactId'],
+            'publications': [
+                {
                     'name': publication['name'],
                     'type': publication['type'],
-                    } for publication in project['publications']]
-            })
-    return components
+                }
+                for publication in project['publications']
+            ],
+        }
+        for (name, project) in build_config['projects'].items()
+        if len(project['publications']) > 0
+    ]
 
 
 def get_version():
@@ -45,10 +48,9 @@ def get_extensions(module_name):
         artifact_type = publication['type']
         if artifact_type not in EXTENSIONS:
             raise ValueError(
-                "For '{}', 'publication->type' must be one of {}".format(
-                    module_name, repr(EXTENSIONS.keys())
-                )
+                f"For '{module_name}', 'publication->type' must be one of {repr(EXTENSIONS.keys())}"
             )
+
         extensions[publication['name']] = [
                 extension + checksum_extension
                 for extension in EXTENSIONS[artifact_type]

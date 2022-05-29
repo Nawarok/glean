@@ -59,8 +59,7 @@ def load_data(filename):
     with open(filename) as fd:
         reader = csv.reader(fd)
         column_names = next(reader)
-        for row in reader:
-            data.append(dict((name, value) for (name, value) in zip(column_names, row)))
+        data.extend(dict(zip(column_names, row)) for row in reader)
     return data
 
 
@@ -74,8 +73,7 @@ def parse_version(build_id):
         build_id = build_id[1:-1]
     if build_id.startswith("Nightly"):
         parts = build_id.split()
-        date = int(parts[1])
-        return date
+        return int(parts[1])
     return None
 
 
@@ -190,8 +188,8 @@ def draw_line(parent, x1, x2, y1, y2, **kwargs):
         x1 -= diff / 2.0
         x2 += diff / 2.0
     attrs = {"x1": str(x1), "x2": str(x2), "y1": str(y1), "y2": str(y2)}
-    kwargs = dict((k.replace("_", "-"), v) for (k, v) in kwargs.items())
-    attrs.update(kwargs)
+    kwargs = {k.replace("_", "-"): v for (k, v) in kwargs.items()}
+    attrs |= kwargs
     return ET.SubElement(parent, "line", attrs)
 
 
@@ -202,8 +200,8 @@ def draw_text(parent, x, y, text, **kwargs):
     title = kwargs.pop("title", None)
 
     attrs = {"x": str(x), "y": str(y), "font-family": "sans-serif", "font-size": "10px"}
-    kwargs = dict((k.replace("_", "-"), v) for (k, v) in kwargs.items())
-    attrs.update(kwargs)
+    kwargs = {k.replace("_", "-"): v for (k, v) in kwargs.items()}
+    attrs |= kwargs
     el = ET.SubElement(parent, "text", attrs)
     el.text = text
 
@@ -269,7 +267,7 @@ def plot_timeline(client_id, data, metrics_rows, baseline_rows):
             draw_text(svg, x + 2, 12, str(fixes[0][0] + 1), title=fixes[0][1][0])
             fixes.pop(0)
 
-            if len(fixes) == 0:
+            if not fixes:
                 break
 
     # Draw the actual pings in the timeline
@@ -345,13 +343,16 @@ def find_issues(client_data, stats):
             ping["notes"].add(ZERO_LENGTH)
 
         # Find multiple pings with the same end_time
-        if last_ping is not None:
-            if ping["ping_type"] == "metrics" and last_ping["ping_type"] == "metrics":
-                if ping["end_time_local"] == last_ping["end_time_local"]:
-                    ping["notes"].add(DUPLICATE_TIME)
-                    last_ping["notes"].add(DUPLICATE_TIME)
-                else:
-                    ping["notes"].add(NO_BASELINE)
+        if (
+            last_ping is not None
+            and ping["ping_type"] == "metrics"
+            and last_ping["ping_type"] == "metrics"
+        ):
+            if ping["end_time_local"] == last_ping["end_time_local"]:
+                ping["notes"].add(DUPLICATE_TIME)
+                last_ping["notes"].add(DUPLICATE_TIME)
+            else:
+                ping["notes"].add(NO_BASELINE)
 
         # Find missing or duplicate seq numbers
         last_of_same_type = last_by_type.get(ping["ping_type"])
@@ -386,7 +387,7 @@ def find_issues(client_data, stats):
         last_by_type[ping["ping_type"]] = ping
 
     # Add client stats to the overall stats
-    for note in client_stats.keys():
+    for note in client_stats:
         stats.setdefault(note, 0)
         stats[note] += 1
 
