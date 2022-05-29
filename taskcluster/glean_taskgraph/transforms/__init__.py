@@ -31,8 +31,11 @@ def publications_to_artifact_map_paths(name, version, publications, secondary_ex
         for extension in _extensions(publication["type"], secondary_extensions):
             artifact_filename = _artifact_filename(publication['name'], version, extension)
             build_map_paths[f"public/build/{artifact_filename}"] = {
-                "checksums_path": "",  # TODO beetmover marks this as required, but it's not needed
-                "destinations": ["maven2/org/mozilla/telemetry/{}/{}/{}".format(publication['name'], version, artifact_filename)]
+                "checksums_path": "",
+                "destinations": [
+                    f"maven2/org/mozilla/telemetry/{publication['name']}/{version}/{artifact_filename}"
+                ],
             }
+
 
     return build_map_paths

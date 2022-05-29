@@ -52,11 +52,7 @@ class PingType:
             reason (enum, optional): The reason the ping was submitted.
         """
         reason_string: Optional[str] = None
-        if reason is not None:
-            reason_string = self._reason_codes[reason]
-        else:
-            reason_string = None
-
+        reason_string = self._reason_codes[reason] if reason is not None else None
         if self._test_callback is not None:
             self._test_callback(reason_string)
             self._test_callback = None

@@ -41,8 +41,7 @@ def setup_logging():
 
     def log_handler():
         while True:
-            data = reader.readline().rstrip()
-            if data:
+            if data := reader.readline().rstrip():
                 json_content = json.loads(data)
                 target = json_content["target"]
                 if target not in FILTERED_TARGETS:

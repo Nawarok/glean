@@ -16,7 +16,7 @@ ROOT = Path(__file__).parent
 
 def test_builtin_pings():
     assert set(dir(_builtins.pings)).issuperset(
-        set(["metrics", "baseline", "events", "deletion_request"])
+        {"metrics", "baseline", "events", "deletion_request"}
     )
 
 

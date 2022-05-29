@@ -261,11 +261,11 @@ class Glean:
         cls._destroy_data_dir = True
 
     @_util.classproperty
-    def configuration(cls) -> Configuration:
+    def configuration(self) -> Configuration:
         """
         Access the configuration object to change dynamic parameters.
         """
-        return cls._configuration
+        return self._configuration
 
     @classmethod
     def _reset(cls) -> None:

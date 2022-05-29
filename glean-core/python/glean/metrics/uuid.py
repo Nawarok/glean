@@ -32,7 +32,7 @@ class UuidMetricType:
         Generate a new UUID value and set it in the metric store.
         """
         id = self._inner.generate_and_set()
-        return uuid.UUID("urn:uuid:" + id)
+        return uuid.UUID(f"urn:uuid:{id}")
 
     def set(self, value: Union[uuid.UUID, str]) -> None:
         """
@@ -44,9 +44,8 @@ class UuidMetricType:
         self._inner.set(str(value))
 
     def test_get_value(self, ping_name: Optional[str] = None) -> Optional[uuid.UUID]:
-        id = self._inner.test_get_value()
-        if id:
-            return uuid.UUID("urn:uuid:" + id)
+        if id := self._inner.test_get_value():
+            return uuid.UUID(f"urn:uuid:{id}")
         else:
             return None
 

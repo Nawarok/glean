@@ -93,7 +93,7 @@ def _parse_ping_headers(
     try:
         headers = list(json.loads(headers_as_json).items())
     except json.decoder.JSONDecodeError:
-        log.error("Error while parsing headers for ping " + document_id)
+        log.error(f"Error while parsing headers for ping {document_id}")
 
     return headers
 

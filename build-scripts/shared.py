@@ -45,7 +45,7 @@ def set_gradle_substitution_path(project_dir, name, value):
     project_dir = Path(project_dir).resolve()
     properties_file = project_dir / "local.properties"
     step_msg(f"Configuring local publication in project at {properties_file}")
-    name_eq = name + "="
+    name_eq = f"{name}="
     abs_value = Path(value).resolve()
     # Check if the named property already exists.
     if properties_file.exists():

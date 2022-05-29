@@ -63,10 +63,7 @@ class EventMetricType:
         elif isinstance(extra, dict):
 
             def key_to_str(key):
-                if isinstance(key, enum.Enum):
-                    return key.value
-                else:
-                    return str(key)
+                return key.value if isinstance(key, enum.Enum) else str(key)
 
             extra = {key_to_str(k): v for k, v in extra.items()}
         else:

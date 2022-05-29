@@ -34,9 +34,7 @@ def build_scriptworker_signing_payload(config, task, task_def):
         formats.update(artifacts["formats"])
 
     scope_prefix = config.graph_config["scriptworker"]["scope-prefix"]
-    task_def["scopes"].append(
-        "{}:signing:cert:{}".format(scope_prefix, worker["cert"])
-    )
+    task_def["scopes"].append(f'{scope_prefix}:signing:cert:{worker["cert"]}')
     task_def["scopes"].extend([
         f"{scope_prefix}:signing:format:{signing_format}" for signing_format in sorted(formats)
     ])
@@ -80,8 +78,9 @@ def build_scriptworker_beetmover_payload(config, task, task_def):
 
     scope_prefix = config.graph_config["scriptworker"]["scope-prefix"]
     task_def["scopes"].append(
-        "{}:beetmover:bucket:{}".format(scope_prefix, worker["bucket"])
+        f'{scope_prefix}:beetmover:bucket:{worker["bucket"]}'
     )
+
     task_def["scopes"].append(
         f"{scope_prefix}:beetmover:action:push-to-maven"
     )

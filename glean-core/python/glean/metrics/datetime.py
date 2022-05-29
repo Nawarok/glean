@@ -49,10 +49,7 @@ class DatetimeMetricType:
         tzinfo = value.tzinfo
         if tzinfo is not None:
             utcoff = tzinfo.utcoffset(value)
-            if utcoff is not None:
-                offset = utcoff.seconds
-            else:
-                offset = 0
+            offset = utcoff.seconds if utcoff is not None else 0
         else:
             offset = 0
 
